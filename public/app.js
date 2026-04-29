@@ -23,10 +23,11 @@ async function startAnalysis() {
   hideSections();
 
   try {
-    // 并行获取分析和推荐
+    // 并行获取分析和推荐（使用 POST 传递 API Key）
+    const body = JSON.stringify({ steamId, key: apiKey });
     const [analysisRes, recommendRes] = await Promise.all([
-      fetch(`/api/analyze?steamId=${encodeURIComponent(steamId)}&key=${encodeURIComponent(apiKey)}`),
-      fetch(`/api/recommend?steamId=${encodeURIComponent(steamId)}&key=${encodeURIComponent(apiKey)}`)
+      fetch('/api/analyze', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body }),
+      fetch('/api/recommend', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body })
     ]);
 
     const analysis = await analysisRes.json();
@@ -248,7 +249,6 @@ function showGamesList(games) {
   const container = document.getElementById('games-list');
   const count = document.getElementById('game-count');
 
-  analysisData._games = games;
   count.textContent = `${games.length} 款游戏`;
 
   renderGames(games);
@@ -300,9 +300,9 @@ function getTagColor(category) {
  */
 function filterGames() {
   const query = document.getElementById('game-search').value.toLowerCase();
-  if (!analysisData?._games) return;
+  if (!analysisData?.games) return;
 
-  const filtered = analysisData._games.filter(game =>
+  const filtered = analysisData.games.filter(game =>
     game.name.toLowerCase().includes(query)
   );
   renderGames(filtered);

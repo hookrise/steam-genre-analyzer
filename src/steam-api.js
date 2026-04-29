@@ -87,7 +87,7 @@ async function getGameGenres(games) {
       const cached = JSON.parse(fs.readFileSync(CACHE_FILE, 'utf-8'));
       genreCache = new Map(Object.entries(cached));
     } catch (e) {
-      // 缓存损坏则忽略
+      console.warn('游戏类型缓存文件损坏，将重新获取:', e.message);
     }
   }
 
@@ -114,7 +114,7 @@ async function getGameGenres(games) {
           genreCache.set(String(game.appid), []);
         }
       } catch (e) {
-        // 单个游戏获取失败，标记为空
+        console.warn(`获取游戏 ${game.appid} (${game.name}) 类型失败:`, e.message);
         genreCache.set(String(game.appid), []);
       }
 
@@ -143,6 +143,10 @@ async function getGameGenres(games) {
  */
 function saveCache(genreCache) {
   try {
+    const dir = path.dirname(CACHE_FILE);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
     const obj = Object.fromEntries(genreCache);
     fs.writeFileSync(CACHE_FILE, JSON.stringify(obj, null, 2), 'utf-8');
   } catch (e) {
@@ -182,9 +186,6 @@ async function getPlayerSummary(steamId, apiKey) {
     console.error('获取玩家信息失败:', playerErrors.join(' | '));
     return null;
   }
-  if (!players || players.length === 0) {
-    return null;
-  }
 
   const player = players[0];
   return {
@@ -195,57 +196,9 @@ async function getPlayerSummary(steamId, apiKey) {
   };
 }
 
-/**
- * 从 Steam 商店搜索推荐游戏
- * @param {string} genre - 游戏类型
- * @param {Array} ownedAppIds - 用户已拥有的 appid 列表
- * @param {string} apiKey - Steam API Key
- * @returns {Promise<Array>} 推荐游戏列表
- */
-async function getRecommendedGames(genre, ownedAppIds, apiKey) {
-  try {
-    await delay(config.requestDelay);
-    // 使用 Steam 商店搜索
-    const url = `${config.storeApiBase}/appdetails`;
-
-    // 先获取该类型下的一些热门游戏
-    // 用 Steam 的 GetAppList 获取所有应用列表来按类型筛选不太可行
-    // 改用 SteamSpy 热门游戏数据或商店搜索
-
-    // 这里使用 store.steampowered.com 的标签搜索功能
-    const searchUrl = `https://store.steampowered.com/api/getrecommendations`;
-    // 简化为返回按类型推荐的逻辑
-    // 实际上 Steam 没有直接的 "按类型推荐" API，需要组合查询
-
-    // 替代方案: 通过 Steam 标签搜索
-    const tagUrl = `https://store.steampowered.com/api/tagdetails/${encodeURIComponent(genre)}`;
-    const tagResponse = await apiClient.get(tagUrl, { timeout: 5000 });
-    const tagData = tagResponse.data;
-
-    if (tagData?.success && tagData?.tags) {
-      // 提取热门游戏并过滤已拥有的
-      const recommendations = tagData.tags
-        .filter(item => !ownedAppIds.includes(item.appid))
-        .slice(0, 10)
-        .map(item => ({
-          appid: item.appid,
-          name: item.name,
-          count: item.count
-        }));
-      return recommendations;
-    }
-
-    return [];
-  } catch (e) {
-    console.error(`获取 ${genre} 推荐失败:`, e.message);
-    return [];
-  }
-}
-
 module.exports = {
   apiClient,
   getOwnedGames,
   getGameGenres,
-  getPlayerSummary,
-  getRecommendedGames
+  getPlayerSummary
 };

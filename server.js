@@ -7,6 +7,8 @@ const { getRecommendations } = require('./src/recommender');
 
 const app = express();
 
+app.use(express.json());
+
 // API: 诊断连接
 app.get('/api/diagnose', async (req, res) => {
   const results = [];
@@ -34,9 +36,9 @@ app.get('/api/diagnose', async (req, res) => {
 app.use(express.static(path.join(__dirname, 'public')));
 
 // API: 分析 Steam 游戏库
-app.get('/api/analyze', async (req, res) => {
+app.post('/api/analyze', async (req, res) => {
   try {
-    const { steamId, key } = req.query;
+    const { steamId, key } = req.body;
 
     if (!steamId || !key) {
       return res.status(400).json({
@@ -79,7 +81,7 @@ app.get('/api/analyze', async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('分析出错:', error.message);
+    console.error('分析出错:', error);
     res.status(500).json({
       success: false,
       error: error.message || '分析过程中发生错误'
@@ -88,9 +90,9 @@ app.get('/api/analyze', async (req, res) => {
 });
 
 // API: 获取游戏推荐
-app.get('/api/recommend', async (req, res) => {
+app.post('/api/recommend', async (req, res) => {
   try {
-    const { steamId, key } = req.query;
+    const { steamId, key } = req.body;
 
     if (!steamId || !key) {
       return res.status(400).json({
@@ -115,7 +117,7 @@ app.get('/api/recommend', async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('推荐出错:', error.message);
+    console.error('推荐出错:', error);
     res.status(500).json({
       success: false,
       error: error.message || '获取推荐时发生错误'
