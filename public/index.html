@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Steam 游戏类型分析</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <!-- 头部 -->
+    <header class="header">
+      <div class="logo">
+        <span class="logo-icon">🎮</span>
+        <h1>Steam 游戏类型分析</h1>
+      </div>
+      <p class="subtitle">分析你的游戏库，发现你的游戏偏好</p>
+    </header>
+
+    <!-- 输入区域 -->
+    <section id="input-section" class="section">
+      <div class="card">
+        <h2>开始分析</h2>
+        <div class="form-group">
+          <label for="steamId">Steam 64位 ID</label>
+          <input type="text" id="steamId" placeholder="例如: 76561197960435530">
+          <span class="hint">在 Steam 个人资料页 URL 中可以找到</span>
+        </div>
+        <div class="form-group">
+          <label for="apiKey">Steam Web API Key</label>
+          <input type="password" id="apiKey" placeholder="输入你的 API Key">
+          <span class="hint">
+            前往 <a href="https://steamcommunity.com/dev/apikey" target="_blank">steamcommunity.com/dev/apikey</a> 注册（免费）
+          </span>
+        </div>
+        <button id="analyze-btn" class="btn btn-primary" onclick="startAnalysis()">
+          开始分析
+        </button>
+        <div id="loading" class="loading hidden">
+          <div class="spinner"></div>
+          <p>正在分析游戏库，首次分析可能需要一些时间...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 玩家信息 -->
+    <section id="player-section" class="section hidden">
+      <div class="card player-card" id="player-card">
+        <img id="player-avatar" src="" alt="头像" class="player-avatar">
+        <div class="player-info">
+          <h2 id="player-name"></h2>
+          <p id="player-stats"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 分析结果概览 -->
+    <section id="overview-section" class="section hidden">
+      <div class="card">
+        <h2>游戏偏好概览</h2>
+        <div id="overview-content" class="overview-grid"></div>
+      </div>
+    </section>
+
+    <!-- 类型分布图表 -->
+    <section id="chart-section" class="section hidden">
+      <div class="card">
+        <h2>游戏类型分布</h2>
+        <div class="chart-container">
+          <canvas id="genreChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- 子类型占比 -->
+    <section id="subgenre-section" class="section hidden">
+      <div class="card">
+        <h2>子类型详细占比</h2>
+        <p class="card-desc">各主类型下具体子类型的游玩时长分布</p>
+        <div id="subgenre-content"></div>
+      </div>
+    </section>
+
+    <!-- 推荐游戏 -->
+    <section id="recommend-section" class="section hidden">
+      <div class="card">
+        <h2>你可能也会喜欢</h2>
+        <div id="recommend-content" class="recommend-grid"></div>
+      </div>
+    </section>
+
+    <!-- 游戏列表 -->
+    <section id="games-section" class="section hidden">
+      <div class="card">
+        <div class="card-header">
+          <h2>游戏库</h2>
+          <span id="game-count" class="badge"></span>
+        </div>
+        <div class="search-bar">
+          <input type="text" id="game-search" placeholder="搜索游戏..." oninput="filterGames()">
+        </div>
+        <div id="games-list" class="games-list"></div>
+      </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+      <p>数据来源: <a href="https://steampowered.com" target="_blank">Steam</a> | Steam 游戏类型分析工具</p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
